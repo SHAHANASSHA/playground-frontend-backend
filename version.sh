@@ -2,65 +2,49 @@
 
 set -e
 
-# Get last tag or fallback
+# Get latest tag
 LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
 echo "Last tag: $LAST_TAG"
 
-# Initialize version parts
-VERSION=$(echo "$LAST_TAG" | sed 's/^v//')
-IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+# Get commits since last tag
+COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"%s%n%b")
 
-# Safely get commits since last tag
-if git rev-parse "$LAST_TAG" >/dev/null 2>&1; then
-    COMMITS=$(git log ${LAST_TAG}..HEAD --oneline)
-else
-    echo "Tag $LAST_TAG does not exist in history, using full commit log."
-    COMMITS=$(git log --oneline)
-    MAJOR=0
-    MINOR=0
-    PATCH=0
-fi
-
-# Debug print
-echo "Commits since last tag:"
+echo "Commits since $LAST_TAG:"
 echo "$COMMITS"
 
-# Flags to track bump
-bump_patch=false
-bump_minor=false
-bump_major=false
+BUMP="patch"
 
-# Check each commit message
-while read -r line; do
-    [[ "$line" =~ major ]] && bump_major=true
-    [[ "$line" =~ minor ]] && bump_minor=true
-    [[ "$line" =~ patch ]] && bump_patch=true
-done <<< "$COMMITS"
-if $bump_major; then
-    ((MAJOR++))
-    MINOR=0
-    PATCH=0
-elif $bump_minor; then
-    ((MINOR++))
-    PATCH=0
-elif $bump_patch; then
-    ((PATCH++))
+if echo "$COMMITS" | grep -q "^major"; then
+  BUMP="major"
+elif echo "$COMMITS" | grep -q "^minor:"; then
+  BUMP="minor"
+elif echo "$COMMITS" | grep -q "^patch:"; then
+  BUMP="patch"
 else
-    echo "No version keywords found in recent commits. Skipping tagging."
-    echo "v${MAJOR}.${MINOR}.${PATCH}" > version.txt
-    exit 0
+  echo "No version bump needed. Exiting."
+  exit 0
 fi
-NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
-echo "New version: $NEW_TAG"
 
-# Optionally write to version.txt
-echo "$NEW_TAG" > version.txt
+# Parse version parts
+VERSION=${LAST_TAG#v}
+IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
 
-# Check if the tag already exists
-if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
-    echo "Tag $NEW_TAG already exists."
-else
-    git tag "$NEW_TAG"
-    git push origin "$NEW_TAG"
-    echo "Tagged and pushed $NEW_TAG"
-fi
+# Bump
+case "$BUMP" in
+  major)
+    ((MAJOR+=1)); MINOR=0; PATCH=0 ;;
+  minor)
+    ((MINOR+=1)); PATCH=0 ;;
+  patch)
+    ((PATCH+=1)) ;;
+esac
+
+NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+echo "Creating tag $NEW_TAG"
+
+git config user.name "SHAHANASSHA"
+git config user.email "shashahanas5@gmail.com"
+
+git tag -a "$NEW_TAG" -m "Release $NEW_TAG"
+git push origin "$NEW_TAG"
+
