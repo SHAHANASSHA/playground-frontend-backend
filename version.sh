@@ -47,6 +47,7 @@ elif $bump_patch; then
     ((PATCH++))
 else
     echo "No version keywords found in recent commits. Skipping tagging."
+    echo "v${MAJOR}.${MINOR}.${PATCH}" > version.txt
     exit 0
 fi
 NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
