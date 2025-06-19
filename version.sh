@@ -52,7 +52,7 @@ fi
 
 NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
 echo "New version: $NEW_TAG"
-
+echo "$NEW_TAG" > version.txt
 # Check if tag already exists
 if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
     echo "Tag $NEW_TAG already exists."
