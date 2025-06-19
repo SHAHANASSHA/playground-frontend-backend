@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 # Get last tag or fallback
 LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
@@ -49,11 +49,13 @@ else
     echo "No version keywords found in recent commits. Skipping tagging."
     exit 0
 fi
-
 NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
 echo "New version: $NEW_TAG"
+
+# Optionally write to version.txt
 echo "$NEW_TAG" > version.txt
-# Check if tag already exists
+
+# Check if the tag already exists
 if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
     echo "Tag $NEW_TAG already exists."
 else
@@ -61,3 +63,4 @@ else
     git push origin "$NEW_TAG"
     echo "Tagged and pushed $NEW_TAG"
 fi
+
