@@ -2,49 +2,53 @@
 
 set -e
 
-# Get latest tag
+# Get last tag or default to v0.0.0
 LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
 echo "Last tag: $LAST_TAG"
 
 # Get commits since last tag
-COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"%s%n%b")
+COMMITS=$(git log ${LAST_TAG}..HEAD --oneline)
 
-echo "Commits since $LAST_TAG:"
-echo "$COMMITS"
-
-BUMP="patch"
-
-if echo "$COMMITS" | grep -q "major"; then
-  BUMP="major"
-elif echo "$COMMITS" | grep -q "^minor:"; then
-  BUMP="minor"
-elif echo "$COMMITS" | grep -q "^patch:"; then
-  BUMP="patch"
-else
-  echo "No version bump needed. Exiting."
-  exit 0
-fi
-
-# Parse version parts
-VERSION=${LAST_TAG#v}
+# Initialize version parts from last tag
+VERSION=$(echo "$LAST_TAG" | sed 's/^v//')
 IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
 
-# Bump
-case "$BUMP" in
-  major)
-    ((MAJOR+=1)); MINOR=0; PATCH=0 ;;
-  minor)
-    ((MINOR+=1)); PATCH=0 ;;
-  patch)
-    ((PATCH+=1)) ;;
-esac
+# Flag to track what to bump
+bump_patch=false
+bump_minor=false
+bump_major=false
 
-NEW_TAG="v$MAJOR.$MINOR.$PATCH"
-echo "Creating tag $NEW_TAG"
+# Check each commit message
+while read -r line; do
+    [[ "$line" =~ major ]] && bump_major=true
+    [[ "$line" =~ minor ]] && bump_minor=true
+    [[ "$line" =~ patch ]] && bump_patch=true
+done <<< "$COMMITS"
 
-git config user.name "SHAHANASSHA"
-git config user.email "shashahanas5@gmail.com"
+# Decide bump logic: major > minor > patch
+if $bump_major; then
+    ((MAJOR++))
+    MINOR=0
+    PATCH=0
+elif $bump_minor; then
+    ((MINOR++))
+    PATCH=0
+elif $bump_patch; then
+    ((PATCH++))
+else
+    echo "No version keywords found in recent commits. Skipping tagging."
+    exit 0
+fi
 
-git tag -a "$NEW_TAG" -m "Release $NEW_TAG"
-git push origin "$NEW_TAG"
+NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+echo "New version: $NEW_TAG"
+
+# Check if tag already exists
+if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
+    echo "Tag $NEW_TAG already exists."
+else
+    git tag "$NEW_TAG"
+    git push origin "$NEW_TAG"
+    echo "Tagged and pushed $NEW_TAG"
+fi
 
