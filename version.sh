@@ -2,18 +2,30 @@
 
 set -e
 
-# Get last tag or default to v0.0.0
+# Get last tag or fallback
 LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
 echo "Last tag: $LAST_TAG"
 
-# Get commits since last tag
-COMMITS=$(git log ${LAST_TAG}..HEAD --oneline)
-
-# Initialize version parts from last tag
+# Initialize version parts
 VERSION=$(echo "$LAST_TAG" | sed 's/^v//')
 IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
 
-# Flag to track what to bump
+# Safely get commits since last tag
+if git rev-parse "$LAST_TAG" >/dev/null 2>&1; then
+    COMMITS=$(git log ${LAST_TAG}..HEAD --oneline)
+else
+    echo "Tag $LAST_TAG does not exist in history, using full commit log."
+    COMMITS=$(git log --oneline)
+    MAJOR=0
+    MINOR=0
+    PATCH=0
+fi
+
+# Debug print
+echo "Commits since last tag:"
+echo "$COMMITS"
+
+# Flags to track bump
 bump_patch=false
 bump_minor=false
 bump_major=false
@@ -24,8 +36,6 @@ while read -r line; do
     [[ "$line" =~ minor ]] && bump_minor=true
     [[ "$line" =~ patch ]] && bump_patch=true
 done <<< "$COMMITS"
-
-# Decide bump logic: major > minor > patch
 if $bump_major; then
     ((MAJOR++))
     MINOR=0
