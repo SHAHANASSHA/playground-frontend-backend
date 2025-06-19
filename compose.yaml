@@ -1,0 +1,11 @@
+services:
+  synnefo-lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: synnefo-lab
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - /var/db:/db

@@ -1,0 +1,61 @@
+/* html {
+  background-color: #101828;
+} */
+
+.terminal-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.terminal-container::-webkit-scrollbar {
+  display: none;
+}
+
+.xterm-viewport {
+  overflow-y: hidden;
+}
+
+.xterm::-webkit-scrollbar {
+  display: none;
+}
+
+.xterm {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+table {
+  @apply border-2;
+}
+
+td, th {
+  @apply border-2 text-center;
+}
+
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #8886 #f1f1f111;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 12px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #f1f1f111;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #8886;
+  border-radius: 6px;
+  border: 3px solid #f1f1f111;
+}
+
+table, tr, td, th {
+  border: 3px solid white;
+}
+td, th {
+  padding-block: 6px;
+}
