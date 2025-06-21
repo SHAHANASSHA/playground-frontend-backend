@@ -11,7 +11,7 @@ COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"%s%n%b")
 
 echo "Commits since $LAST_TAG:"
 echo "$COMMITS"
-
+ 
 BUMP="patch"  
  
 if echo "$COMMITS" | grep -q "^major"; then
