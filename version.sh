@@ -23,7 +23,7 @@ elif echo "$COMMITS" | grep -q "^patch:"; then
 else
   echo "No version bump needed. Exiting."
   exit 0
-fi
+fi 
     
 # Parse version parts
 VERSION=${LAST_TAG#v}
