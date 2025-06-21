@@ -24,7 +24,7 @@ else
   echo "No version bump needed. Exiting."
   exit 0
 fi
-  
+    
 # Parse version parts
 VERSION=${LAST_TAG#v}
 IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
