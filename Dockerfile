@@ -8,7 +8,7 @@ RUN npm install
 
 COPY . . 
   
-COPY ./.env .
+COPY ./.env . 
  
 # RUN mkdir -p /db
 
