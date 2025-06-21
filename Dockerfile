@@ -7,7 +7,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
- 
+  
 COPY ./.env .
 
 # RUN mkdir -p /db
