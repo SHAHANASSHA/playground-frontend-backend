@@ -49,4 +49,4 @@ git config user.email "shashahanas5@gmail.com"
 git tag -a "$NEW_TAG" -m "Release $NEW_TAG"
 git push origin "$NEW_TAG"
 
-echo "✅ Tagged and pushed $NEW_TAG successfully."
+echo "Tagged and pushed $NEW_TAG successfully."
